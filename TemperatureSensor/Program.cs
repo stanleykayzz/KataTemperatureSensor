@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TemperatureSensor;
+using TemperatureSensor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<TemperatureInfoContext>(
     DbContextOptions => DbContextOptions.UseSqlite(
         builder.Configuration["ConnectionString:CityInfoDBConnectionString"]));
+
+builder.Services.AddScoped<ITemperatureInfoRepository, TemperatureInfoRepository>();
 
 var app = builder.Build();
 
