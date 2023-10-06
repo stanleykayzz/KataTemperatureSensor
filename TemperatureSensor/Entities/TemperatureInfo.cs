@@ -14,28 +14,15 @@ namespace TemperatureSensor.Entities
         public string State { get; set; }
         public DateTime Date { get; set; }
 
-        //public ICollection<StateLimit> states { get; set; }
-        //= new List<StateLimit>();
+        public TemperatureInfo() { }
 
-        //public TemperatureInfo() { }
-
-        //public TemperatureInfo(int temperature)
-        //{
-        //    if (temperature < 19) State = "COLD";
-        //    else if (temperature >= 19 && temperature < 30) State = "WARM";
-        //    else if (temperature >= 30) State = "HOT";
-        //    Date = DateTime.Now;
-        //    Temperature = temperature;
-        //}
-
-        //public TemperatureInfo(int id, int temperature)
-        //{
-        //    Id = id;
-        //    if (temperature < 19) State = "COLD";
-        //    else if (temperature >= 19 && temperature < 30) State = "WARM";
-        //    else if (temperature >= 30) State = "HOT";
-        //    Date = DateTime.Now;
-        //    Temperature = temperature;
-        //}
+        public TemperatureInfo(int temperature, int cold = 19, int warm = 30, int hot = 30)
+        {
+            if (temperature < cold) State = "COLD";
+            else if (temperature >= cold && temperature < warm) State = "WARM";
+            else if (temperature >= hot) State = "HOT";
+            Date = DateTime.Now;
+            Temperature = temperature;
+        }
     }
 }
