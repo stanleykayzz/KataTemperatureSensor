@@ -17,7 +17,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<TemperatureInfoContext>(
     DbContextOptions => DbContextOptions.UseSqlite(
-        builder.Configuration["ConnectionString:CityInfoDBConnectionString"]));
+        builder.Configuration["ConnectionStrings:TemperatureInfoDBConnectionString"]));
 
 builder.Services.AddScoped<ITemperatureInfoRepository, TemperatureInfoRepository>();
 
