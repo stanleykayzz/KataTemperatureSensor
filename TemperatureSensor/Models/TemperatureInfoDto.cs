@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TemperatureSensor.Entities;
 
 namespace TemperatureSensor.Models
 {
     public class TemperatureInfoDto
     {
-        [Required]
-        public int Id { get; set; }
         public int Temperature { get; set; }
         public string State { get; set; }
         public DateTime Date { get; set; }
@@ -28,15 +27,13 @@ namespace TemperatureSensor.Models
             State = etat;
             Date = date;
         }
-
-        public TemperatureInfoDto(int id, int temperature)
+        public TemperatureInfo convertToTemperatureInfo()
         {
-            Id = id;
-            if (temperature < 19) State = "COLD";
-            else if (temperature >= 19 && temperature < 30) State = "WARM";
-            else if (temperature >= 30) State = "HOT";
-            Date = DateTime.Now;
-            Temperature = temperature;
+            var res = new TemperatureInfo();
+            res.Temperature = Temperature;
+            res.State = State;
+            res.Date = Date;
+            return res;
         }
     }
 }

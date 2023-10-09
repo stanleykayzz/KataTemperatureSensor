@@ -14,19 +14,16 @@ namespace TemperatureSensor
             {
                 new StateLimitDto()
                 {
-                    Id = 1,
                     Name = "COLD",
                     Value = 19,
                 },
                 new StateLimitDto()
                 {
-                    Id = 2,
                     Name = "HOT",
                     Value = 30,
                 },
                 new StateLimitDto()
                 {
-                    Id = 3,
                     Name = "WARM",
                     Value = 30,
                 }
