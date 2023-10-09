@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using TemperatureSensor;
+using TemperatureSensor.Repository;
+using AutoMapper;
+using TemperatureSensor.Repository.Interface;
 using TemperatureSensor.Services;
+using TemperatureSensor.Services.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +24,9 @@ builder.Services.AddDbContext<TemperatureInfoContext>(
         builder.Configuration["ConnectionStrings:TemperatureInfoDBConnectionString"]));
 
 builder.Services.AddScoped<ITemperatureInfoRepository, TemperatureInfoRepository>();
+builder.Services.AddScoped<IStateLimitRepository, StateLimitRepository>();
+builder.Services.AddScoped<ITemperatureInfoService, TemperatureInfoService>();
+builder.Services.AddScoped<IStateLimitService, StateLimitService>();
 
 var app = builder.Build();
 
