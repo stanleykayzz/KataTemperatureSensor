@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TemperatureSensor.Entities;
 using TemperatureSensor.Models;
+using TemperatureSensor.Repository;
+using TemperatureSensor.Repository.Interface;
 using TemperatureSensor.Services;
+using TemperatureSensor.Services.Interface;
 
 namespace TemperatureSensor.Controllers
 {
@@ -9,17 +12,21 @@ namespace TemperatureSensor.Controllers
     [Route("api/")]
     public class TemperaturesController : ControllerBase
     {
-        private readonly ITemperatureInfoRepository temperatureInfoRepository;
+        private readonly ITemperatureInfoService _temperatureInfoService;
+        private readonly IStateLimitService _stateLimitService;
 
-        public TemperaturesController(ITemperatureInfoRepository temperatureInfoRepository)
+        public TemperaturesController(ITemperatureInfoService service, IStateLimitService stateLimitService)
         {
-            this.temperatureInfoRepository = temperatureInfoRepository ??
-                throw new ArgumentNullException(nameof(temperatureInfoRepository));
+            this._temperatureInfoService = service ??
+                throw new ArgumentNullException(nameof(_temperatureInfoService));
+
+            this._stateLimitService = stateLimitService ??
+                throw new ArgumentNullException(nameof(_stateLimitService));
         }
         [HttpGet("temperatures")]
         public async Task<ActionResult<TemperatureInfoDto>> GetTemperatures()
         {
-            var temperatureInfos = await temperatureInfoRepository.GetAllAsync();
+            var temperatureInfos = await _temperatureInfoService.GetAllTemperatureInfoAsync();
 
             return Ok(temperatureInfos);
             //return Ok(TemperatureInfosDataStore.Current.TemperatureInfos);
@@ -29,43 +36,40 @@ namespace TemperatureSensor.Controllers
         public async Task<ActionResult<TemperatureInfoDto>> GetLastTemperaturesByNumber(int number)
         {
             //var count = TemperatureInfosDataStore.Current.TemperatureInfos.Count();
-            var temperatureInfos = await temperatureInfoRepository.GetAllAsync();
-            var count = temperatureInfos.Count();
+            var list = await _temperatureInfoService.GetLastTemperatureInfoByNumerAsync(number);
 
-            //var LastXTemperatures = TemperatureInfosDataStore.Current.TemperatureInfos.Skip(Math.Max(0, count - number));
-            var LastXTemperatures = temperatureInfos.Skip(Math.Max(0, count - number));
-
-            if(count < number)
+            if (list == null)
             {
                 return NotFound();
             }
-            return Ok(LastXTemperatures);
+            return Ok(list);
         }
 
         [HttpGet("temperature/{id}")]
-        public ActionResult<TemperatureInfoDto> GetTemperature(int id)
+        public ActionResult<TemperatureInfoDto?> GetTemperature(int id)
         {
             //var temperatureInfo = TemperatureInfosDataStore.Current.TemperatureInfos.FirstOrDefault(x => x.Id == id);
-            var temperatureInfo = temperatureInfoRepository.GetTemperatureInfoAsync(id);
-            
+            var temperatureInfo = _temperatureInfoService.GetTemperatureInfoByIdAsync(id).Result;
+
             if (temperatureInfo == null) { return NotFound(); }
 
             return Ok(temperatureInfo);
         }
-            
+
         [HttpPost("captor/{temperature}")]
-        public async Task<ActionResult<TemperatureInfo>> PostTemperature(int temperature)
+        public async Task<ActionResult<TemperatureInfoDto>> PostTemperature(int temperature)
         {
-            var temp = await temperatureInfoRepository.AddTemperatureInfo(temperature);
+            var newTemperature = new TemperatureInfoDto(temperature);
+            await _temperatureInfoService.CreateTemperatureInfoAsync(newTemperature);
             //return CreatedAtRoute("/api/captor/" + temperature, temp);
-            return Ok(temp);
+            return Ok(newTemperature);
         }
 
         [HttpGet("temperature/limits")]
         public async Task<ActionResult<StateLimit>> GetTemperatureLimits()
         {
             //return Ok(StateLimitDataStore.CurrentLimits.StateLimits);
-            return Ok(await temperatureInfoRepository.GetAllStateLimitsAsync());
+            return Ok(await _stateLimitService.GetAllStateLimitAsync());
         }
 
         [HttpPost]
@@ -77,24 +81,24 @@ namespace TemperatureSensor.Controllers
             )
         {
             //var StateLimits = StateLimitDataStore.CurrentLimits.StateLimits;
-            //if (hot != null)
-            //{
-            //    var hotItem = StateLimits.FirstOrDefault(x => x.Name == "HOT");
-            //    hotItem.Value = hot;
-            //}
-            //if (cold != null)
-            //{
-            //    var coldItem = StateLimits.FirstOrDefault(x => x.Name == "COLD");
-            //    coldItem.Value = cold;
-            //}
-            //if (warm != null)
-            //{
-            //    var warmItem = StateLimits.FirstOrDefault(x => x.Name == "WARM");
-            //    warmItem.Value = warm;
-            //}
+            if (hot != null)
+            {
+                //var hotItem = StateLimits.FirstOrDefault(x => x.Name == "HOT");
+                var dto = new StateLimitDto("HOT", hot);
+                var hotItem = _stateLimitService.UpdateStateLimit(dto);
 
-            await temperatureInfoRepository.UpdateStateLimits(hot, cold, warm);
-            
+            }
+            if (cold != null)
+            {
+                var dto = new StateLimitDto("COLD", cold);
+                var hotItem = _stateLimitService.UpdateStateLimit(dto);
+            }
+            if (warm != null)
+            {
+                var dto = new StateLimitDto("WARM", warm);
+                var hotItem = _stateLimitService.UpdateStateLimit(dto);
+            }
+
             return Ok("Updated Temperature state limit");
         }
     }
